@@ -1,14 +1,20 @@
 import React, { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
+import tom from "../assets/Tomm.png";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const name = useRef("");
   const email = useRef("");
   const password = useRef("");
 
@@ -32,7 +38,7 @@ const Login = () => {
           // Signed up
           const user = userCredential.user;
           console.log("User created", user);
-          navigate("/")
+          navigate("/browse");
           // ...
         })
         .catch((error) => {
@@ -54,15 +60,26 @@ const Login = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          console.log(user)
-          navigate("/browse")
+          console.log(user);
+          updateProfile(user, {
+            email: email.current.value,
+            displayName: name.current.value,
+            photoURL: tom,
+          })
+            .then(() => {})
+            .catch((error) => {
+              // An error occurred
+              // ...
+              setErrorMessage(error);
+            });
+          navigate("/browse");
           // ...
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
           setErrorMessage(errorCode);
-          console.log("Sign in Error ", errorCode - errorMessage)
+          console.log("Sign in Error ", errorCode - errorMessage);
         });
     }
   };
@@ -89,6 +106,7 @@ const Login = () => {
             type="text"
             placeholder="Full Name"
             className="p-3 my-2 w-full rounded-sm bg-gray-500"
+            ref={name}
           ></input>
         )}
         <input
